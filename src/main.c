@@ -55,8 +55,10 @@ static int loadModules(PibOptions options)
 static void unloadModules(void)
 {
     for (int i = 0; i < 4; i++) {
-        if (modID[i])
+        if (modID[i]) {
             sceKernelStopUnloadModule(modID[i], 0, NULL, 0, NULL, 0);
+            modID[i] = 0;
+        }
     }
 }
 

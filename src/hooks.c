@@ -31,6 +31,7 @@
 tai_hook_ref_t hookRef[NUM_HOOKS];
 SceUID hook[NUM_HOOKS];
 int customResolutionMode;
+int pibHooksInitialized = 0;
 
 void loadHooks(PibOptions options)
 {
@@ -51,12 +52,15 @@ void loadHooks(PibOptions options)
         hook[4] = taiHookFunctionExport(&hookRef[4], info.name, 0xB4FE1ABB, 0x249A431A, eglGetProcAddress_functionNamePatch);
         LOG("eglGetProcAddress Function Name Patch: 0x%08x\n", hook[4]);
     }
+    pibHooksInitialized = 1;
 }
 
 void releaseHooks(void)
 {
-    for (int i = 0; i < NUM_HOOKS; i++)
-    {
-        taiHookRelease(hook[i], hookRef[i]);
+    if (pibHooksInitialized) {
+        for (int i = 0; i < NUM_HOOKS; i++) {
+            taiHookRelease(hook[i], hookRef[i]);
+        }
+        pibHooksInitialized = 0;
     }
 }
