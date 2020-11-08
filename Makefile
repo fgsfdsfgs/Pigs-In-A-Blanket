@@ -2,16 +2,21 @@ LIB  	= pib
 OBJS    = src/main.o src/hooks.o src/shacccgpatch.o src/patches.o src/sha1.o
 INCLUDE = include
 
-PREFIX  ?= ${DOLCESDK}/arm-dolce-eabi
-CC      = arm-dolce-eabi-gcc
-AR      = arm-dolce-eabi-ar
-CFLAGS  = -Wl,-q -Wall -Wno-incompatible-pointer-types -Wno-pointer-sign -O3 -nostartfiles -nostdlib -DVITA
+PREFIX  ?= ${VITASDK}/arm-vita-eabi
+CC      = arm-vita-eabi-gcc
+AR      = arm-vita-eabi-ar
+CFLAGS  = -Wl,-q -Wall -Wno-incompatible-pointer-types -Wno-pointer-sign -O3 -nostartfiles -nostdlib -DVITA -D__vita__
 ASFLAGS = $(CFLAGS)
 
-all: lib
+all: stub lib
 
 debug: CFLAGS += -DDEBUG
-debug: lib
+debug: stub lib
+
+stub: piglet_stub/out/liblibScePiglet_stub.a
+
+piglet_stub/out/liblibScePiglet_stub.a:
+	$(MAKE) -C piglet_stub
 
 lib: lib$(LIB).a
 
@@ -20,7 +25,8 @@ lib: lib$(LIB).a
 
 clean:
 	@rm -rf combine $(OBJS) lib$(LIB).a
-	
+	@$(MAKE) -C piglet_stub clean
+
 install: lib$(LIB).a
 	@mkdir -p $(DESTDIR)$(PREFIX)/include/
 	@cp include/pib.h $(DESTDIR)$(PREFIX)/include/
@@ -40,3 +46,5 @@ install: lib$(LIB).a
 	@mkdir -p $(DESTDIR)$(PREFIX)/lib/
 	@cp lib$(LIB).a $(DESTDIR)$(PREFIX)/lib/
 	@echo Installed PIB!
+
+.PHONY: install clean

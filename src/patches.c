@@ -27,6 +27,8 @@
 #include "../include/hooks.h"
 #include "../include/debug.h"
 
+extern void SHA1(char *hash_out, const char *str, int len);
+
 void glGetBooleanv_shaderCompilerPatch(unsigned int pname, unsigned char *data)
 {
     TAI_CONTINUE(void, hookRef[1], pname, data);
