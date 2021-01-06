@@ -92,6 +92,11 @@ int eglCreateWindowSurface_resolutionPatch(int dpy, int config, int win, int *at
             *(int16_t *)(dpy + 0x28) = 1088;
             *(int16_t *)(dpy + 0x2A) = 1920;
             break;
+        case 7:
+            *(int16_t *)(dpy + 0x26) = 960;
+            *(int16_t *)(dpy + 0x28) = 544;
+            *(int16_t *)(dpy + 0x2A) = 960;
+            break;
     }
 
     return TAI_CONTINUE(int, hookRef[3], dpy, config, win, attrib_list);
@@ -150,7 +155,59 @@ unsigned int pglDisplaySetSwapInterval_intervalPatch(void *display, int interval
     return ret;
 }
 
-int sceDisplayWaitVblankStart_intervalPatch()
+int sceDisplayWaitVblankStart_intervalPatch(void)
 {
     return sceDisplayWaitVblankStartMulti(swap_interval);
+}
+
+SceGxmErrorCode sceGxmColorSurfaceInit_msaaPatch(SceGxmColorSurface *surface,
+                                                    SceGxmColorFormat colorFormat,
+                                                    SceGxmColorSurfaceType surfaceType,
+                                                    SceGxmColorSurfaceScaleMode scaleMode,
+                                                    SceGxmOutputRegisterSize outputRegisterSize,
+                                                    uint32_t width,
+                                                    uint32_t height,
+                                                    uint32_t strideInPixels,
+                                                    void *data)
+{
+    scaleMode = SCE_GXM_COLOR_SURFACE_SCALE_MSAA_DOWNSCALE;
+    return TAI_CONTINUE(SceGxmErrorCode, hookRef[16], surface, colorFormat, surfaceType, scaleMode, outputRegisterSize, width, height, strideInPixels, data);
+}
+
+SceGxmErrorCode sceGxmCreateRenderTarget_msaaPatch(const SceGxmRenderTargetParams *params, SceGxmRenderTarget **renderTarget)
+{
+    SceGxmRenderTargetParams renderTargetParams;
+	memset(&renderTargetParams, 0, 0x14);
+	renderTargetParams.flags = 0;
+	renderTargetParams.width = params->width;
+	renderTargetParams.height = params->height;
+    renderTargetParams.multisampleMode = isCreatingSurface ? SCE_GXM_MULTISAMPLE_4X : SCE_GXM_MULTISAMPLE_NONE;
+	renderTargetParams.scenesPerFrame = 1;
+	renderTargetParams.multisampleLocations = 0;
+	renderTargetParams.driverMemBlock = -1;
+    return TAI_CONTINUE(SceGxmErrorCode, hookRef[17], &renderTargetParams, renderTarget);
+}
+
+SceGxmErrorCode sceGxmDepthStencilSurfaceInit_msaaPatch(SceGxmDepthStencilSurface *surface,
+                                                            SceGxmDepthStencilFormat depthStencilFormat,
+                                                            SceGxmDepthStencilSurfaceType surfaceType,
+                                                            uint32_t strideInSamples,
+                                                            void *depthData,
+                                                            void *stencilData)
+{
+    if (isCreatingSurface)
+        strideInSamples *= 2;
+    return TAI_CONTINUE(SceGxmErrorCode, hookRef[18], surface, depthStencilFormat, surfaceType, strideInSamples, depthData, stencilData);
+}
+
+SceGxmErrorCode sceGxmShaderPatcherCreateFragmentProgram_msaaPatch(SceGxmShaderPatcher *shaderPatcher,
+                                                                    SceGxmShaderPatcherId programId,
+                                                                    SceGxmOutputRegisterFormat outputFormat,
+                                                                    SceGxmMultisampleMode multisampleMode,
+                                                                    const SceGxmBlendInfo *blendInfo,
+                                                                    const SceGxmProgram *vertexProgram,
+                                                                    SceGxmFragmentProgram **fragmentProgram)
+{
+    multisampleMode = SCE_GXM_MULTISAMPLE_4X;
+    return TAI_CONTINUE(SceGxmErrorCode, hookRef[19], shaderPatcher, programId, outputFormat, multisampleMode, blendInfo, vertexProgram, fragmentProgram);
 }

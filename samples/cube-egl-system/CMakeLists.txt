@@ -8,14 +8,14 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(GLES20_Cube)
+project(GLES20_Cube_System)
 include("${DOLCESDK}/share/dolce.cmake" REQUIRED)
 
-set(DOLCE_APP_NAME "OpenGL ES 2.0 Cube")
-set(DOLCE_TITLEID  "GLES00002")
+set(DOLCE_APP_NAME "OpenGL ES 2.0 Cube System")
+set(DOLCE_TITLEID  "GLES00003")
 set(DOLCE_VERSION  "01.00")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DVITA -Wall -fno-lto -fno-pic -fno-plt")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DVITA -Wno-main -Wall -fno-lto -nostdlib")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(DOLCE_MKSFOEX_FLAGS "${DOLCE_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
@@ -24,7 +24,6 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  glfw3
   pib
   SceLibKernel_stub
   SceThreadmgr_stub
@@ -33,15 +32,18 @@ target_link_libraries(${PROJECT_NAME}
   SceIofilemgr_stub
   SceGxm_stub
   SceDisplay_stub
-  SceCtrl_stub
-  SceTouch_stub
-  pthread
-  m
+  SceLibc_stub
+  SceLibm_stub
 )
 
 set(DOLCE_ELF_CREATE_FLAGS "${DOLCE_ELF_CREATE_FLAGS} -h 2097152")
 
-dolce_create_self(eboot.bin ${PROJECT_NAME} UNSAFE NOSTRIP)
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
+  COMMAND dolce-make-bootparam app_memsize 0x8000 attribute 0x02 ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin # 0x8000 = 32MB(32768kb)memsize
+)
+
+dolce_create_self(eboot.bin ${PROJECT_NAME} UNSAFE BOOT_PARAM ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin)
 
 dolce_create_vpk(${PROJECT_NAME}.vpk ${DOLCE_TITLEID} eboot.bin
   VERSION ${DOLCE_VERSION}

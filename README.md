@@ -1,7 +1,10 @@
+[![Development Time](https://wakatime.com/badge/github/SonicMastr/Pigs-In-A-Blanket.svg)](https://wakatime.com/badge/github/SonicMastr/Pigs-In-A-Blanket)
+
 # Pigs In A Blanket | OpenGL ES 2.0 on the PS Vita by CBPS
 #### A Piglet/ShaccCg Wrapper Library for OpenGL ES 2.0 Support on the Vita
+#### Now with System App and Experimental MSAAx4 Support!
 ---
-##### Compiling
+### Compiling
 - Install [DolceSDK](https://github.com/DolceSDK/doc) (Has not been tested on VitaSDK as of yet)
 - Run ```make -j4 install```
 - Link libpib.a in your projects
@@ -10,11 +13,19 @@ Note when building your projects:
 
 **ALWAYS COMPILE YOUR PROJECTS WITH UNSAFE**. Doing otherwise will result in PIB failing.
 
-If using CMake, make sure to specify ```set(DOLCE_ELF_CREATE_FLAGS "${DOLCE_ELF_CREATE_FLAGS} -h 3194304")```<br>If using Makefile, make sure to specify ```dolce-elf-create -h 3194304```
+If using CMake, make sure to specify ```set(DOLCE_ELF_CREATE_FLAGS "${DOLCE_ELF_CREATE_FLAGS} -h 2097152")```<br>If using Makefile, make sure to specify ```dolce-elf-create -h 2097152```
 
-Piglet needs an SceLibc heap size of at least 3MB to intialize. Without it, the module will fail to start. This heap needs to be larger if using ```-nostdlib``` as this becomes your main heap. More info on ```-nostdlib``` support in the headers.
+Piglet needs an SceLibc heap size of at least 2MB to intialize. Without it, the module will fail to start. This heap needs to be larger if using ```-nostdlib``` as this becomes your main heap. More info on ```-nostdlib``` support in the headers.
 
-`liblibScePiglet_stub.a` (Yes, that's the name), `libSceShaccCg_stub.a`, and `libtaihen_stub.a` are all linked automatically as they are combined with PIB after being built. Be sure to be aware of that.
+These stubs are all linked automatically as they are combined with PIB after being built. Be sure to be aware of that.
+
+- liblibScePiglet_stub.a (Yes, that's the name)
+- libSceShaccCg_stub.a
+- libtaihen_stub.a
+- libSceGxmInternalForVsh_stub.a
+- libSceGxmInternal_stub.a
+- libSceSharedFb_stub.a
+- libSceAppMgr_stub.a
 
 ### Check the "Samples" folder for examples of how to use PIB to initialize OpenGLES 2.0 with EGL or GLFW.
 Yes. We have a GLFW3 port for the vita. You can built it here: https://github.com/SonicMastr/glfw-vita<br>Note: Button Mapping is not correct for anything but the Cross button. Hats and Analog Input are perfect. Also supports Touch.
